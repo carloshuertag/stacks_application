@@ -234,7 +234,7 @@ int calculate(int a, char operator, int b) {
         return a * b;
     case '/':
         return a / b;
-    case 'e':
+    case '^':
         return pow(a, b);
     default:
         puts("Not an operator");
