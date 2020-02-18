@@ -271,5 +271,9 @@ void main() {
     gets(infix_expression);
     char postfix_expression[1];
     infixToPostfix(infix_expression, postfix_expression);
-    printf("\nResult:\n%s = %d\n", postfix_expression, postfixResult(postfix_expression));
+    int result = postfixResult(postfix_expression);
+    if(result == INT_MIN)
+        printf("\nResult:\n%s = %s\n", postfix_expression, infix_expression);
+    else
+        printf("\nResult:\n%s = %d\n", postfix_expression, result);
 }
