@@ -1,8 +1,15 @@
+/************************************************************************************************
+ * stacks_application
+ * @author: Carlos Huerta García
+ * @description: Receives an infix expression and displays the postfix expression and its result
+ * *********************************************************************************************/
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <ctype.h>
+#include <limits.h>
 
 typedef char StackEntry;
 
@@ -11,9 +18,18 @@ typedef struct StackElement {
     struct StackElement* next;
 } StackElement;
 
+typedef struct StackInt {
+    int entry;
+    struct StackInt* next;
+} StackInt;
+
 typedef struct Stack {
     StackElement* top;
 } Stack;
+
+typedef struct iStack {
+    StackInt* top;
+} iStack;
 
 Stack* createStack() {
     Stack* stack = (Stack*)malloc(sizeof(Stack));
@@ -21,42 +37,82 @@ Stack* createStack() {
     return stack;
 }
 
-StackElement* createElement(StackEntry item) { 
+iStack* createiStack() {
+    iStack* stack = (iStack*)malloc(sizeof(iStack));
+    stack->top = NULL;
+    return stack;
+}
+
+StackElement* createElement(StackEntry item) {
     StackElement* element = (StackElement*)malloc(sizeof(StackElement));
-    if(element == NULL) {
-        puts("Error al asignar memoria");
+    if (element == NULL) {
+        puts("Error at creating element");
         exit(1);
     }
     element->entry = item;
-    element->next = NULL; 
+    element->next = NULL;
     return element;
 }
 
-bool isEmpty(Stack* stack) { 
-    return !stack->top; 
+StackInt* createInt(int item) {
+    StackInt* element = (StackInt*)malloc(sizeof(StackInt));
+    if (element == NULL) {
+        puts("Error at creating int");
+        exit(1);
+    }
+    element->entry = item;
+    element->next = NULL;
+    return element;
 }
 
-void push(StackEntry item, Stack* stack) { 
-    StackElement* element = createElement(item); 
+bool isEmpty(Stack* stack) {
+    return !stack->top;
+}
+
+bool isIEmpty(iStack* stack) {
+    return !stack->top;
+}
+
+void push(StackEntry item, Stack* stack) {
+    StackElement* element = createElement(item);
+    element->next = stack->top;
+    stack->top = element;
+}
+
+void pushInt(int item, iStack* stack) {
+    StackInt* element = createInt(item);
     element->next = stack->top;
     stack->top = element;
 }
 
 StackEntry pop(Stack* stack) {
-    StackEntry popped;
-    if (isEmpty(stack)){
+    StackEntry popped = ' ';
+    if (isEmpty(stack)) {
         puts("Error: current stack is empty");
-        return popped; 
+        return popped;
     }
     StackElement* temp = stack->top;
-    stack->top = stack->top->next; 
+    stack->top = stack->top->next;
     popped = temp->entry;
-    free(temp); 
-    return popped; 
+    free(temp);
+    return popped;
+}
+
+int popInt(iStack* stack) {
+    int popped = INT_MIN;
+    if (isIEmpty(stack)) {
+        puts("Error: current int stack is empty");
+        return popped;
+    }
+    StackInt* temp = stack->top;
+    stack->top = stack->top->next;
+    popped = temp->entry;
+    free(temp);
+    return popped;
 }
 
 StackEntry peek(Stack* stack) {
-    StackEntry peeked;
+    StackEntry peeked = ' ';
     if (isEmpty(stack)) {
         puts("Error: current stack is empty");
         return peeked;
@@ -64,92 +120,156 @@ StackEntry peek(Stack* stack) {
     return stack->top->entry;
 }
 
+int peekInt(iStack* stack) {
+    int peeked = INT_MIN;
+    if (isIEmpty(stack)) {
+        puts("Error: current int stack is empty");
+        return peeked;
+    }
+    return stack->top->entry;
+}
+
 void print(Stack* stack) {
-    if (isEmpty(stack)){
+    if (isEmpty(stack)) {
         puts("[ ]");
         return;
     }
     StackElement* element = stack->top;
-    while (element->next != NULL){
+    while (element->next != NULL) {
         printf("[%c]->", element->entry);
         element = element->next;
     }
     printf("[%c]->", element->entry);
 }
 
-void clear(Stack * s) {
+void printi(iStack* stack) {
+    if (isIEmpty(stack)) {
+        puts("[ ]");
+        return;
+    }
+    StackInt* element = stack->top;
+    while (element->next != NULL) {
+        printf("[%d]->", element->entry);
+        element = element->next;
+    }
+    printf("[%d]->", element->entry);
+}
+
+void clear(Stack* stack) {
     StackElement* element;
-    while ((element = s->top) != NULL) {
-        s->top = s->top->next;
+    while ((element = stack->top) != NULL) {
+        stack->top = stack->top->next;
         free(element);
     }
 }
 
-bool isNumberOrLetter(char c) {
-    return (c > 47) && (c < 58) || (c > 64) && (c < 91)|| (c > 96) && (c < 123);
+void cleari(iStack* stack) {
+    StackInt* element;
+    while ((element = stack->top) != NULL) {
+        stack->top = stack->top->next;
+        free(element);
+    }
 }
 
 bool isOperator(char c) {
-    return (c > 41) && (c < 44) || c == '-' || c == '/' || c == '^'; 
+    return (c > 41) && (c < 44) || c == '-' || c == '/' || c == '^';
 }
 
-char* stacks_application(const char* infix_expression) {
-    char* postfix_expression = "";
-    char aux[] = " ";
-    Stack* stack = createStack();
-    int i = 0;
-    while(infix_expression[i] != '\0') {
-        if(isNumberOrLetter(infix_expression[i])){
+int operatorPrecedence(char operator) {
+    if (isOperator(operator)) {
+        if(operator == '(' || operator == ')')
+            return 4;
+        if (operator == '^')
+            return 3;
+        if (operator == '/' || operator == '*')
+            return 2;
+        if (operator == '+' || operator == '-')
+            return 1;
+    }
+    return 0;
+}
+
+void infixToPostfix(const char* infix_expression, char postfix_expression[]) {
+    char aux[] = {' ', '\0'};
+    Stack* stack_application = createStack();
+    int i;
+    for (i = 0; i < strlen(infix_expression); i++) {
+        if(isalnum(infix_expression[i])){ //number or letter
             aux[0] = infix_expression[i];
             strcat(postfix_expression, aux);
-        } else {
-            if(infix_expression[i] == '('){
-                aux[0] = pop(stack);
-                strcat(postfix_expression, aux);
-                push(infix_expression[i], stack);
-            } else {
-                if(infix_expression[i] == ')'){
-                    while((aux[0] = pop(stack)) != '(') {
-                        strcat(postfix_expression, aux);
-                    }
-                } else { //isOperator
-                    if (infix_expression[i] == '*' || infix_expression[i] == '/') {
-                        if (peek(stack) == '^') {
-                            aux[0] = pop(stack);
-                            strcat(postfix_expression, aux);
-                            push(infix_expression[i], stack);
-                        } else{
-                            push(infix_expression[i], stack);
-                        }
-                    } else {
-                        if (infix_expression[i] == '+' || infix_expression[i] == '-') {
-                            if (peek(stack) == '*' || peek(stack) == '/') {
-                                aux[0] = pop(stack);
-                                strcat(postfix_expression, aux);
-                                push(infix_expression[i], stack);
-                            } else { //is ^
-                                push(infix_expression[i], stack);
-                            }
-                        } else {
-                            push(infix_expression[i], stack);
-                        }
-                    }
-                }
-            }
+            continue;
         }
-        i++;
+        if(infix_expression[i] == '('){ //is (
+            push(infix_expression[i], stack_application);
+            continue;
+        } 
+        if(infix_expression[i] == ')'){ //is )
+            while(!isEmpty(stack_application) && ((aux[0] = pop(stack_application)) != '(')) {
+                strcat(postfix_expression, aux);
+            }
+            continue;
+        }
+        if(isOperator(infix_expression[i])){ //isOperator
+            while(!isEmpty(stack_application) && (operatorPrecedence(peek(stack_application)) >= operatorPrecedence(infix_expression[i]))){ 
+                aux[0] = pop(stack_application);
+                strcat(postfix_expression, aux);
+            }
+            push(infix_expression[i], stack_application);
+        }
     }
-    while(!isEmpty(stack)){
-        aux[0] = pop(stack);
+    while(!isEmpty(stack_application)){
+        aux[0] = pop(stack_application);
         strcat(postfix_expression, aux);
     }
-    clear(stack);
-    return postfix_expression;
+    clear(stack_application);
+}
+
+int calculate(int a, char operator, int b) {
+    switch (operator) {
+    case '+':
+        return a + b;
+    case '-':
+        return a - b;
+    case '*':
+        return a * b;
+    case '/':
+        return a / b;
+    case 'e':
+        return pow(a, b);
+    default:
+        puts("Not an operator");
+        return INT_MIN;
+    }
+}
+
+int postfixResult(const char* postfix_expression) {
+    iStack *stack_application = createiStack();
+    int a, b, i;
+    char aux[2] = {' ', '\0'};
+    for (i = 0; i < strlen(postfix_expression); i++) {
+        if(isdigit(postfix_expression[i])){
+            aux[0] = postfix_expression[i];
+            pushInt((int)atoi(aux), stack_application);
+        }
+        if(isOperator(postfix_expression[i])){
+            b = popInt(stack_application);
+            a = popInt(stack_application);
+            pushInt(calculate(a, postfix_expression[i], b), stack_application);
+        }
+        if(isalpha(postfix_expression[i])){
+            return INT_MIN;
+        }
+    }
+    i = peekInt(stack_application);
+    cleari(stack_application);
+    return i;
 }
 
 void main() {
-    puts("\n**************************************************\nstacks_application\n**************************************************\n@author: Carlos Huerta Garcia\n**************************************************\nDescription: Receives an infix expression and displays the postfix expression\n**************************************************\n\nEnter an infix expression:");
+    puts("\ninfix2Postfix\n@author: Carlos Huerta Garcia\nDescription: Receives an infix expression and displays the postfix expression and its result\n\nEnter an infix expression with single operands:");
     char* infix_expression;
     gets(infix_expression);
-    puts(stacks_application(infix_expression));
+    char postfix_expression[1];
+    infixToPostfix(infix_expression, postfix_expression);
+    printf("\nResult:\n%s = %d\n", postfix_expression, postfixResult(postfix_expression));
 }
