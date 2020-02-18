@@ -269,11 +269,10 @@ void main() {
     puts("\ninfix2Postfix\n@author: Carlos Huerta Garcia\nDescription: Receives an infix expression and displays the postfix expression and its result\n\nEnter an infix expression with single operands:");
     char* infix_expression;
     gets(infix_expression);
-    char postfix_expression[1];
+    char postfix_expression[] ={' '};
     infixToPostfix(infix_expression, postfix_expression);
+    printf("\nPostfix expression: %s\n", postfix_expression);
     int result = postfixResult(postfix_expression);
-    if(result == INT_MIN)
-        printf("\nResult:\n%s = %s\n", postfix_expression, infix_expression);
-    else
-        printf("\nResult:\n%s = %d\n", postfix_expression, result);
+    if(result != INT_MIN)
+        printf("Result: %d\n", result);
 }
