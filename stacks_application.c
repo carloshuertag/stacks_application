@@ -156,18 +156,28 @@ void printi(intStack* stack) {
 }
 
 void clear(Stack* stack) {
-    StackElement* element;
-    while ((element = stack->top) != NULL) {
-        stack->top = stack->top->next;
-        free(element);
+    if(!isEmpty(stack)){
+        StackElement* element;
+        while ((element = stack->top) != NULL) {
+            stack->top = stack->top->next;
+            free(element);
+        }
+    } else {
+        puts("Error: current char stack is empty");
+        return;
     }
 }
 
 void cleari(intStack* stack) {
-    StackInt* element;
-    while ((element = stack->top) != NULL) {
-        stack->top = stack->top->next;
-        free(element);
+    if(!isIEmpty(stack)){
+        StackInt* element;
+        while ((element = stack->top) != NULL) {
+            stack->top = stack->top->next;
+            free(element);
+        }
+    } else {
+        puts("Error: current int stack is empty");
+        return;
     }
 }
 
