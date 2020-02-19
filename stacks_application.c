@@ -232,6 +232,7 @@ void infixToPostfix(const char* infix_expression, char postfix_expression[]) {
         strcat(postfix_expression, aux);
     }
     clear(stack_application);
+    free(stack_application);
 }
 
 int calculate(int a, char operator, int b) {
