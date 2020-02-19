@@ -27,9 +27,9 @@ typedef struct Stack {
     StackElement* top;
 } Stack;
 
-typedef struct iStack {
+typedef struct intStack {
     StackInt* top;
-} iStack;
+} intStack;
 
 Stack* createStack() {
     Stack* stack = (Stack*)malloc(sizeof(Stack));
@@ -37,8 +37,8 @@ Stack* createStack() {
     return stack;
 }
 
-iStack* createiStack() {
-    iStack* stack = (iStack*)malloc(sizeof(iStack));
+intStack* createiStack() {
+    intStack* stack = (intStack*)malloc(sizeof(intStack));
     stack->top = NULL;
     return stack;
 }
@@ -69,7 +69,7 @@ bool isEmpty(Stack* stack) {
     return !stack->top;
 }
 
-bool isIEmpty(iStack* stack) {
+bool isIEmpty(intStack* stack) {
     return !stack->top;
 }
 
@@ -79,7 +79,7 @@ void push(StackEntry item, Stack* stack) {
     stack->top = element;
 }
 
-void pushInt(int item, iStack* stack) {
+void pushInt(int item, intStack* stack) {
     StackInt* element = createInt(item);
     element->next = stack->top;
     stack->top = element;
@@ -98,7 +98,7 @@ StackEntry pop(Stack* stack) {
     return popped;
 }
 
-int popInt(iStack* stack) {
+int popInt(intStack* stack) {
     int popped = INT_MIN;
     if (isIEmpty(stack)) {
         puts("Error: current int stack is empty");
@@ -120,7 +120,7 @@ StackEntry peek(Stack* stack) {
     return stack->top->entry;
 }
 
-int peekInt(iStack* stack) {
+int peekInt(intStack* stack) {
     int peeked = INT_MIN;
     if (isIEmpty(stack)) {
         puts("Error: current int stack is empty");
@@ -142,7 +142,7 @@ void print(Stack* stack) {
     printf("[%c]->", element->entry);
 }
 
-void printi(iStack* stack) {
+void printi(intStack* stack) {
     if (isIEmpty(stack)) {
         puts("[ ]");
         return;
@@ -163,7 +163,7 @@ void clear(Stack* stack) {
     }
 }
 
-void cleari(iStack* stack) {
+void cleari(intStack* stack) {
     StackInt* element;
     while ((element = stack->top) != NULL) {
         stack->top = stack->top->next;
@@ -243,7 +243,7 @@ int calculate(int a, char operator, int b) {
 }
 
 int postfixResult(const char* postfix_expression) {
-    iStack *stack_application = createiStack();
+    intStack *stack_application = createiStack();
     int a, b, i;
     char aux[2] = {' ', '\0'};
     for (i = 0; i < strlen(postfix_expression); i++) {
