@@ -187,6 +187,10 @@ bool isOperator(char c) {
 
 int operatorPrecedence(char operator) {
     if (isOperator(operator)) {
+        if(operator == '{' || operator == '}')
+            return 6;
+        if(operator == '[' || operator == ']')
+            return 5;
         if(operator == '(' || operator == ')')
             return 4;
         if (operator == '^')
@@ -215,6 +219,26 @@ void infixToPostfix(const char* infix_expression, char postfix_expression[]) {
         } 
         if(infix_expression[i] == ')'){ //is )
             while(!isEmpty(stack_application) && ((aux[0] = pop(stack_application)) != '(')) {
+                strcat(postfix_expression, aux);
+            }
+            continue;
+        }
+        if(infix_expression[i] == '['){ //is [
+            push(infix_expression[i], stack_application);
+            continue;
+        } 
+        if(infix_expression[i] == ']'){ //is ]
+            while(!isEmpty(stack_application) && ((aux[0] = pop(stack_application)) != '[')) {
+                strcat(postfix_expression, aux);
+            }
+            continue;
+        }
+        if(infix_expression[i] == '{'){ //is {
+            push(infix_expression[i], stack_application);
+            continue;
+        } 
+        if(infix_expression[i] == '}'){ //is }
+            while(!isEmpty(stack_application) && ((aux[0] = pop(stack_application)) != '{')) {
                 strcat(postfix_expression, aux);
             }
             continue;
@@ -273,16 +297,17 @@ int postfixResult(const char* postfix_expression) {
     }
     i = peekInt(stack_application);
     cleari(stack_application);
+    free(stack_application);
     return i;
 }
 
 void main() {
-    puts("\ninfix2Postfix\n@author: Carlos Huerta Garcia\nDescription: Receives an infix expression and displays the postfix expression and its result\n\nEnter an infix expression with single operands:");
+    puts("\ninfix2Postfix\n@author: Carlos Huerta Garcia\nDescription: Receives an infix expression and displays the postfix expression and its result\n\nEnter an infix expression with operands from 0 to 9 and parentheses only:");
     char* infix_expression;
     gets(infix_expression);
     char postfix_expression[] ={' '};
     infixToPostfix(infix_expression, postfix_expression);
-    printf("\nPostfix expression: %s\n", postfix_expression);
+    printf("\nPostfix expression: %s\n\n", postfix_expression);
     int result = postfixResult(postfix_expression);
     if(result != INT_MIN)
         printf("Result: %d\n", result);
