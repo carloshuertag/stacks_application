@@ -83,8 +83,6 @@ void clear(Stack* stack) {
             stack->top = stack->top->next;
             free(element);
         }
-    } else {
-        puts("Error: current char stack is empty");
-        return;
     }
+    return;
 }

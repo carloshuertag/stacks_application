@@ -13,9 +13,9 @@
 #include "intStack.h"
 #include "Operator.h"
 
-void infixToPostfix(const char* infix_expression, char postfix_expression[]) {
+void infixToPostfix(const char * infix_expression, char postfix_expression[]) {
     char aux[] = {' ', '\0'};
-    Stack* stack_application = createStack();
+    Stack * stack_application = createStack();
     int i;
     for (i = 0; i < strlen(infix_expression); i++) {
         if(isalnum(infix_expression[i])){ //number or letter
@@ -69,10 +69,44 @@ void infixToPostfix(const char* infix_expression, char postfix_expression[]) {
     free(stack_application);
 }
 
+void infix2Prefix(const char * infix_expression, char tmp[], char prefix_expression[]){
+    int i;
+    char aux[] = {' ', '\0'}, prefix_tmp[] = "";
+    Stack * stack_application = createStack();
+    for (i = 0; i < strlen(infix_expression); i++)
+        push(infix_expression[i], stack_application);
+    while(!isEmpty(stack_application)){
+        aux[0] = pop(stack_application);
+        strcat(prefix_expression, aux);
+    } // Reversed infix expression
+    for (i = 0; i < strlen(prefix_expression); i++){
+        if(prefix_expression[i] == '(')
+            prefix_expression[i] = ')';
+        if(prefix_expression[i] == ')')
+            prefix_expression[i] = '(';
+        if(prefix_expression[i] == '[')
+            prefix_expression[i] = ']';
+        if(prefix_expression[i] == ']')
+            prefix_expression[i] = '[';
+        if(prefix_expression[i] == '{')
+            prefix_expression[i] = '}';
+        if(prefix_expression[i] == '}')
+            prefix_expression[i] = '{';
+    } // fix agrupation order
+    infixToPostfix(prefix_expression, prefix_tmp); // Postfix reversed expression
+    for(i = 0; prefix_tmp[i] != '\0'; i++)
+        push(prefix_tmp[i], stack_application);
+    aux[1] = '\0';
+    for (i = 0; !isEmpty(stack_application); i++){
+        aux[0] = pop(stack_application);
+        strcat(tmp, aux);
+    } // Reversed postfix reversed expression
+    clear(stack_application);
+    free(stack_application);
+}
 
-
-int postfixResult(const char* postfix_expression) {
-    iStack* stack_application = createiStack();
+int postfixResult(const char * postfix_expression) {
+    iStack * stack_application = createiStack();
     int a, b, i;
     char aux[2] = {' ', '\0'};
     for (i = 0; i < strlen(postfix_expression); i++) {
@@ -89,20 +123,53 @@ int postfixResult(const char* postfix_expression) {
             return INT_MIN;
         }
     }
-    i = peeki(stack_application);
+    i = popi(stack_application);
     cleari(stack_application);
     free(stack_application);
     return i;
+}
+
+int prefixResult(const char * prefix_expression) {
+    iStack * stack_application = createiStack();
+    int a, b, i;
+    char aux[] = {' ', '\0'};
+    for (i = strlen(prefix_expression) - 1; i >= 0; i--) {
+        if(isdigit(prefix_expression[i])){
+            aux[0] = prefix_expression[i];
+            pushi((int)atoi(aux), stack_application);
+        }
+        if(isOperator(prefix_expression[i])){
+            b = popi(stack_application);
+            a = popi(stack_application);
+            pushi(calculate(a, prefix_expression[i], b), stack_application);
+        }
+        if(isalpha(prefix_expression[i])){
+            return INT_MIN;
+        }
+    }
+    i = popi(stack_application);
+    cleari(stack_application);
+    free(stack_application);
+    return i;
+}
+
+void infix2PostfixNPrefix(const char * infix_expression) {
+    char postfix_expression[] = "", prefix_expression[] = "", tmp[] = "";
+    infixToPostfix(infix_expression, postfix_expression);
+    printf("\nPostfix expression: %s\n\n", postfix_expression);
+    int result = postfixResult(postfix_expression);
+    if(result != INT_MIN)
+        printf("Postfix Result: %d\n", result);
+    infix2Prefix(infix_expression, tmp, prefix_expression);
+    printf("\nPrefix expression: %s\n\n", tmp);
+    result = prefixResult(tmp);
+    if(result != INT_MIN)
+        printf("Prefix Result: %d\n", result);
 }
 
 void main() {
     puts("\ninfix2Postfix\n@author: Carlos Huerta Garcia\nDescription: Receives an infix expression and displays the postfix expression and its result\n\nEnter an infix expression with operands from 0 to 9 and parentheses only:");
     char* infix_expression;
     gets(infix_expression);
-    char postfix_expression[] ={' '};
-    infixToPostfix(infix_expression, postfix_expression);
-    printf("\nPostfix expression: %s\n\n", postfix_expression);
-    int result = postfixResult(postfix_expression);
-    if(result != INT_MIN)
-        printf("Result: %d\n", result);
+    infix2PostfixNPrefix(infix_expression);
 }
