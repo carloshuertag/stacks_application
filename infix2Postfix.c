@@ -13,7 +13,7 @@
 #include "intStack.h"
 #include "Operator.h"
 
-void infixToPostfix(const char * infix_expression, char postfix_expression[]) {
+void infix2Postfix(const char * infix_expression, char postfix_expression[]) {
     char aux[] = {' ', '\0'};
     Stack * stack_application = createStack();
     int i;
@@ -28,9 +28,8 @@ void infixToPostfix(const char * infix_expression, char postfix_expression[]) {
             continue;
         } 
         if(infix_expression[i] == ')'){ //is )
-            while(!isEmpty(stack_application) && ((aux[0] = pop(stack_application)) != '(')) {
+            while(!isEmpty(stack_application) && ((aux[0] = pop(stack_application)) != '('))
                 strcat(postfix_expression, aux);
-            }
             continue;
         }
         if(infix_expression[i] == '['){ //is [
@@ -38,9 +37,8 @@ void infixToPostfix(const char * infix_expression, char postfix_expression[]) {
             continue;
         } 
         if(infix_expression[i] == ']'){ //is ]
-            while(!isEmpty(stack_application) && ((aux[0] = pop(stack_application)) != '[')) {
+            while(!isEmpty(stack_application) && ((aux[0] = pop(stack_application)) != '['))
                 strcat(postfix_expression, aux);
-            }
             continue;
         }
         if(infix_expression[i] == '{'){ //is {
@@ -48,9 +46,8 @@ void infixToPostfix(const char * infix_expression, char postfix_expression[]) {
             continue;
         } 
         if(infix_expression[i] == '}'){ //is }
-            while(!isEmpty(stack_application) && ((aux[0] = pop(stack_application)) != '{')) {
+            while(!isEmpty(stack_application) && ((aux[0] = pop(stack_application)) != '{'))
                 strcat(postfix_expression, aux);
-            }
             continue;
         }
         if(isOperator(infix_expression[i])){ //isOperator
@@ -65,42 +62,6 @@ void infixToPostfix(const char * infix_expression, char postfix_expression[]) {
         aux[0] = pop(stack_application);
         strcat(postfix_expression, aux);
     }
-    clear(stack_application);
-    free(stack_application);
-}
-
-void infix2Prefix(const char * infix_expression, char tmp[], char prefix_expression[]){
-    int i;
-    char aux[] = {' ', '\0'}, prefix_tmp[] = "";
-    Stack * stack_application = createStack();
-    for (i = 0; i < strlen(infix_expression); i++)
-        push(infix_expression[i], stack_application);
-    while(!isEmpty(stack_application)){
-        aux[0] = pop(stack_application);
-        strcat(prefix_expression, aux);
-    } // Reversed infix expression
-    for (i = 0; i < strlen(prefix_expression); i++){
-        if(prefix_expression[i] == '(')
-            prefix_expression[i] = ')';
-        if(prefix_expression[i] == ')')
-            prefix_expression[i] = '(';
-        if(prefix_expression[i] == '[')
-            prefix_expression[i] = ']';
-        if(prefix_expression[i] == ']')
-            prefix_expression[i] = '[';
-        if(prefix_expression[i] == '{')
-            prefix_expression[i] = '}';
-        if(prefix_expression[i] == '}')
-            prefix_expression[i] = '{';
-    } // fix agrupation order
-    infixToPostfix(prefix_expression, prefix_tmp); // Postfix reversed expression
-    for(i = 0; prefix_tmp[i] != '\0'; i++)
-        push(prefix_tmp[i], stack_application);
-    aux[1] = '\0';
-    for (i = 0; !isEmpty(stack_application); i++){
-        aux[0] = pop(stack_application);
-        strcat(tmp, aux);
-    } // Reversed postfix reversed expression
     clear(stack_application);
     free(stack_application);
 }
@@ -129,6 +90,43 @@ int postfixResult(const char * postfix_expression) {
     return i;
 }
 
+void infix2Prefix(const char * infix_expression, char tmp[], char prefix_expression[]){
+    int i;
+    char aux[] = {' ', '\0'}, prefix_tmp[] = "";
+    Stack * stack_application = createStack();
+    for (i = 0; i < strlen(infix_expression); i++)
+        push(infix_expression[i], stack_application);
+    while(!isEmpty(stack_application)){
+        aux[0] = pop(stack_application);
+        strcat(prefix_expression, aux);
+    } // Reversed infix expression
+    for (i = 0; i < strlen(prefix_expression); i++){
+        if(prefix_expression[i] == '(')
+            prefix_expression[i] = ')';
+        if(prefix_expression[i] == ')')
+            prefix_expression[i] = '(';
+        if(prefix_expression[i] == '[')
+            prefix_expression[i] = ']';
+        if(prefix_expression[i] == ']')
+            prefix_expression[i] = '[';
+        if(prefix_expression[i] == '{')
+            prefix_expression[i] = '}';
+        if(prefix_expression[i] == '}')
+            prefix_expression[i] = '{';
+    } // fix agrupation order
+    infix2Postfix(prefix_expression, prefix_tmp); // Postfix reversed expression
+    puts(prefix_tmp);
+    for(i = 0; prefix_tmp[i] != '\0'; i++)
+        push(prefix_tmp[i], stack_application);
+    aux[1] = '\0';
+    for (i = 0; !isEmpty(stack_application); i++){
+        aux[0] = pop(stack_application);
+        strcat(tmp, aux);
+    } // Reversed postfix reversed expression
+    clear(stack_application);
+    free(stack_application);
+}
+
 int prefixResult(const char * prefix_expression) {
     iStack * stack_application = createiStack();
     int a, b, i;
@@ -139,8 +137,8 @@ int prefixResult(const char * prefix_expression) {
             pushi((int)atoi(aux), stack_application);
         }
         if(isOperator(prefix_expression[i])){
-            b = popi(stack_application);
             a = popi(stack_application);
+            b = popi(stack_application);
             pushi(calculate(a, prefix_expression[i], b), stack_application);
         }
         if(isalpha(prefix_expression[i])){
@@ -155,7 +153,7 @@ int prefixResult(const char * prefix_expression) {
 
 void infix2PostfixNPrefix(const char * infix_expression) {
     char postfix_expression[] = "", prefix_expression[] = "", tmp[] = "";
-    infixToPostfix(infix_expression, postfix_expression);
+    infix2Postfix(infix_expression, postfix_expression);
     printf("\nPostfix expression: %s\n\n", postfix_expression);
     int result = postfixResult(postfix_expression);
     if(result != INT_MIN)
