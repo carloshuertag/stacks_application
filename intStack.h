@@ -55,10 +55,9 @@ iStackEntry popi(iStack* stack) {
 }
 
 iStackEntry peeki(iStack* stack) {
-    iStackEntry peeked = INT_MIN;
     if (isiEmpty(stack)) {
         puts("Error: current stack is empty");
-        return peeked;
+        return INT_MIN;
     }
     return stack->top->entry;
 }
@@ -84,5 +83,4 @@ void cleari(iStack* stack) {
             free(element);
         }
     }
-    return;
 }

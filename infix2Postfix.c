@@ -13,6 +13,76 @@
 #include "intStack.h"
 #include "Operator.h"
 
+void validExpression(const char * expression) {
+    if (!expression){
+        puts("Invalid expression");
+        exit(1);
+    }
+    if (!*expression){
+        puts("Invalid expression");
+        exit(1);
+    }
+    Stack * stack_application = createStack();
+    int index, i;
+    bool flag = true;
+    for (i = 0; i < strlen(expression); i++) {
+        if (expression[i] == '(' || expression[i] == '{' || expression[i] == '[' || expression[i] == ']' || expression[i] == '}' || expression[i] == ')'){
+            if(expression[i] == '(' || expression[i] == '{' || expression[i] == '['){
+                push(expression[i], stack_application);
+            } else if(expression[i] == ')' || expression[i] == '}' || expression[i] == ']'){
+                if(!isEmpty(stack_application)){
+                    switch (expression[i]){
+                        case ')':
+                            if(peek(stack_application) == '(')
+                                pop(stack_application);
+                            else{
+                                flag = false;
+                                index = i;
+                                break;
+                            }
+                            break;
+                        case ']':
+                            if (peek(stack_application) == '[')
+                                pop(stack_application);
+                            else {
+                                flag = false;
+                                index = i;
+                                break;
+                            }
+                            break;
+                        case '}':
+                            if (peek(stack_application) == '{')
+                                pop(stack_application);
+                            else {
+                                flag = false;
+                                index = i;
+                                break;
+                            }
+                            break;
+                    }
+                } else{
+                    flag = false;
+                    index = i;
+                    break;
+                }
+            }
+        }
+    }
+    if(flag){ 
+        if(isEmpty(stack_application))
+            return;
+        else{
+            puts("Invalid expression");
+            exit(1);
+        }
+    } else{
+        printf("Invalid expression at: %i", index);
+        exit(1);
+    }
+    clear(stack_application);
+    free(stack_application);
+}
+
 void infix2Postfix(const char * infix_expression, char postfix_expression[]) {
     char aux[] = {' ', '\0'};
     Stack * stack_application = createStack();
@@ -90,41 +160,57 @@ int postfixResult(const char * postfix_expression) {
     return i;
 }
 
+void reverseString(char * string) {
+    if (!string)
+        return;
+    if (!*string)
+        return;
+    char *start = string;
+    char *end = start + strlen(string) - 1;
+    char temp;
+    while (end > start) {
+        temp = *start;
+        *start = *end;
+        *end = temp;
+        ++start;
+        --end;
+    }
+}
+
 void infix2Prefix(const char * infix_expression, char tmp[], char prefix_expression[]){
     int i;
-    char aux[] = {' ', '\0'}, prefix_tmp[] = "";
-    Stack * stack_application = createStack();
-    for (i = 0; i < strlen(infix_expression); i++)
-        push(infix_expression[i], stack_application);
-    while(!isEmpty(stack_application)){
-        aux[0] = pop(stack_application);
-        strcat(prefix_expression, aux);
-    } // Reversed infix expression
+    char prefix_tmp[] = "";
+    strcpy(prefix_expression, infix_expression);
+    reverseString(prefix_expression);
     for (i = 0; i < strlen(prefix_expression); i++){
-        if(prefix_expression[i] == '(')
+        if(prefix_expression[i] == '('){
             prefix_expression[i] = ')';
-        if(prefix_expression[i] == ')')
+            continue;
+        }
+        if(prefix_expression[i] == ')'){
             prefix_expression[i] = '(';
-        if(prefix_expression[i] == '[')
+            continue;
+        }
+        if(prefix_expression[i] == '['){
             prefix_expression[i] = ']';
-        if(prefix_expression[i] == ']')
+            continue;
+        }
+        if(prefix_expression[i] == ']'){
             prefix_expression[i] = '[';
-        if(prefix_expression[i] == '{')
+            continue;
+        }
+        if(prefix_expression[i] == '{'){
             prefix_expression[i] = '}';
-        if(prefix_expression[i] == '}')
+            continue;
+        }
+        if(prefix_expression[i] == '}'){
             prefix_expression[i] = '{';
+            continue;
+        }
     } // fix agrupation order
     infix2Postfix(prefix_expression, prefix_tmp); // Postfix reversed expression
-    puts(prefix_tmp);
-    for(i = 0; prefix_tmp[i] != '\0'; i++)
-        push(prefix_tmp[i], stack_application);
-    aux[1] = '\0';
-    for (i = 0; !isEmpty(stack_application); i++){
-        aux[0] = pop(stack_application);
-        strcat(tmp, aux);
-    } // Reversed postfix reversed expression
-    clear(stack_application);
-    free(stack_application);
+    reverseString(prefix_tmp);// Reversed postfix reversed expression
+    strcpy(tmp, prefix_tmp);
 }
 
 int prefixResult(const char * prefix_expression) {
@@ -152,6 +238,7 @@ int prefixResult(const char * prefix_expression) {
 }
 
 void infix2PostfixNPrefix(const char * infix_expression) {
+    validExpression(infix_expression);
     char postfix_expression[] = "", prefix_expression[] = "", tmp[] = "";
     infix2Postfix(infix_expression, postfix_expression);
     printf("\nPostfix expression: %s\n\n", postfix_expression);

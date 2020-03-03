@@ -55,10 +55,9 @@ StackEntry pop(Stack* stack) {
 }
 
 StackEntry peek(Stack* stack) {
-    StackEntry peeked = CHAR_MIN;
     if (isEmpty(stack)) {
         puts("Error: current stack is empty");
-        return peeked;
+        return CHAR_MIN;
     }
     return stack->top->entry;
 }
@@ -84,5 +83,4 @@ void clear(Stack* stack) {
             free(element);
         }
     }
-    return;
 }
