@@ -1,8 +1,8 @@
-/************************************************************************************************
+/**********************************************************************************************************
  * infix2Postfix
  * @author: Carlos Huerta García
- * @description: Receives an infix expression and displays the postfix expression and its result
- * *********************************************************************************************/
+ * @description: Receives an infix expression and displays the postfix and prefix expression and its result
+ * ********************************************************************************************************/
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -253,7 +253,7 @@ void infix2PostfixNPrefix(const char * infix_expression) {
 }
 
 void main() {
-    puts("\ninfix2Postfix\n@author: Carlos Huerta Garcia\nDescription: Receives an infix expression and displays the postfix expression and its result\n\nEnter an infix expression with operands from 0 to 9 and parentheses only:");
+    puts("\ninfix2PostfixNPrefix\n@author: Carlos Huerta Garcia\nDescription: Receives an infix expression and displays the postfix expression and its result\n\nEnter an infix expression with operands from 0 to 9 and parentheses only:");
     char* infix_expression;
     gets(infix_expression);
     infix2PostfixNPrefix(infix_expression);
